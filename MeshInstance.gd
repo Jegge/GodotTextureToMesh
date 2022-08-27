@@ -1,16 +1,25 @@
 extends MeshInstance
 tool
 
+tool
+
 export (Texture) var texture: Texture = null setget set_texture
 export (Vector3) var pixel_size: Vector3 = Vector3(0.1, 0.1, 0.1) setget set_pixel_size
+export (bool) var texture_is_srgb: bool = true setget set_texture_is_srgb
 
 func set_pixel_size (_pixel_size: Vector3) -> void:
 	pixel_size = _pixel_size
 	update_mesh()
+	update_material()
 
 func set_texture (_texture: Texture) -> void:
 	texture = _texture
 	update_mesh()
+	update_material()
+	
+func set_texture_is_srgb (value: bool) -> void:
+	texture_is_srgb = value
+	update_material()
 
 func update_mesh () -> void:
 	mesh = ArrayMesh.new()
@@ -43,9 +52,13 @@ func update_mesh () -> void:
 	image.unlock()
 
 	mesh = surface.commit()
-
+	
+func update_material () -> void:
+	if mesh.get_surface_count() == 0:
+		return
 	var material = SpatialMaterial.new()
 	material.vertex_color_use_as_albedo = true
+	material.vertex_color_is_srgb = texture_is_srgb
 	mesh.surface_set_material(0, material)
 	
 func _add_bottom (surface: SurfaceTool, x: float, y: float, color: Color) -> void:
